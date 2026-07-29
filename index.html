@@ -284,8 +284,93 @@ body {
 </div>
 
 <script>
-// Phase 1: Structure & Glassmorphism
-// (Timer and Todo logic will be added in Phase 2 & 3)
+// Phase 2: Timer + ASCII Art
+const ASCII_DIGITS = {
+  '0': [' ██████ ','██  ████','██ ██ ██','████  ██',' ██████ '],
+  '1': ['   ██   ',' ████   ','   ██   ','   ██   ',' ██████ '],
+  '2': [' ██████ ','     ██ ',' ██████ ','██      ','████████'],
+  '3': [' ██████ ','     ██ ','  █████ ','     ██ ',' ██████ '],
+  '4': ['██   ██ ','██   ██ ','████████','     ██ ','     ██ '],
+  '5': ['████████','██      ','███████ ','     ██ ','███████ '],
+  '6': [' ██████ ','██      ','███████ ','██   ██ ',' ██████ '],
+  '7': ['████████','    ██  ','   ██   ','  ██    ',' ██     '],
+  '8': [' ██████ ','██   ██ ',' ██████ ','██   ██ ',' ██████ '],
+  '9': [' ██████ ','██   ██ ',' ███████','     ██ ',' ██████ '],
+  ':': ['        ','  ████  ','        ','  ████  ','        ']
+};
+
+let timer = null;
+let seconds = 25 * 60;
+let running = false;
+let phaseMin = 25;
+
+const asciiEl = document.getElementById('asciiDisplay');
+const btnStart = document.getElementById('btnStart');
+const btnReset = document.getElementById('btnReset');
+const phaseBtns = document.querySelectorAll('.phase-btn');
+
+function buildAsciiTime(timeStr) {
+  const rows = ['', '', '', '', ''];
+  for (const ch of timeStr) {
+    const g = ASCII_DIGITS[ch] || ASCII_DIGITS['0'];
+    for (let i = 0; i < 5; i++) rows[i] += g[i] + '  ';
+  }
+  return rows.join('\n');
+}
+
+function updateDisplay() {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  asciiEl.textContent = buildAsciiTime(
+    `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  );
+}
+
+function stopTimer() {
+  if (timer) { clearInterval(timer); timer = null; }
+  running = false;
+  btnStart.textContent = 'Start';
+}
+
+function setPhase(min) {
+  phaseMin = min;
+  seconds = min * 60;
+  stopTimer();
+  updateDisplay();
+}
+
+function toggleTimer() {
+  if (running) { stopTimer(); return; }
+  running = true;
+  btnStart.textContent = 'Pause';
+  timer = setInterval(() => {
+    seconds--;
+    if (seconds <= 0) {
+      seconds = 0;
+      updateDisplay();
+      stopTimer();
+      new Notification('PomodoroPhone', { body: `${phaseMin} min session complete!` });
+      seconds = phaseMin * 60;
+      updateDisplay();
+      return;
+    }
+    updateDisplay();
+  }, 1000);
+}
+
+btnStart.addEventListener('click', toggleTimer);
+btnReset.addEventListener('click', () => { stopTimer(); seconds = phaseMin * 60; updateDisplay(); });
+
+phaseBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    phaseBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    setPhase(parseInt(btn.dataset.min));
+  });
+});
+
+if (Notification.permission === 'default') Notification.requestPermission();
+setPhase(25);
 </script>
 </body>
 </html>
