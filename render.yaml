@@ -1,0 +1,12 @@
+services:
+  - type: static
+    name: pomodorophone
+    runtime: static
+    repo: https://github.com/anomalyco/PomodoroPhone
+    branch: main
+    buildCommand: echo "Static site — no build step"
+    staticPublishPath: .
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
