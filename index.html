@@ -284,7 +284,6 @@ body {
 </div>
 
 <script>
-// Phase 2: Timer + ASCII Art
 const ASCII_DIGITS = {
   '0': [' ██████ ','██  ████','██ ██ ██','████  ██',' ██████ '],
   '1': ['   ██   ',' ████   ','   ██   ','   ██   ',' ██████ '],
@@ -303,10 +302,16 @@ let timer = null;
 let seconds = 25 * 60;
 let running = false;
 let phaseMin = 25;
+let todos = [];
+let history = [];
 
 const asciiEl = document.getElementById('asciiDisplay');
 const btnStart = document.getElementById('btnStart');
 const btnReset = document.getElementById('btnReset');
+const todoInput = document.getElementById('todoInput');
+const btnAddTodo = document.getElementById('btnAddTodo');
+const todoListEl = document.getElementById('todoList');
+const historyContainer = document.getElementById('historyContainer');
 const phaseBtns = document.querySelectorAll('.phase-btn');
 
 function buildAsciiTime(timeStr) {
@@ -339,6 +344,21 @@ function setPhase(min) {
   updateDisplay();
 }
 
+function completeSession() {
+  stopTimer();
+  const entry = {
+    id: Date.now(),
+    date: new Date().toLocaleString(),
+    duration: phaseMin,
+    tasks: todos.filter(t => t.done).map(t => t.text)
+  };
+  history.unshift(entry);
+  todos = [];
+  saveCookie();
+  renderTodos();
+  renderHistory();
+}
+
 function toggleTimer() {
   if (running) { stopTimer(); return; }
   running = true;
@@ -348,7 +368,7 @@ function toggleTimer() {
     if (seconds <= 0) {
       seconds = 0;
       updateDisplay();
-      stopTimer();
+      completeSession();
       new Notification('PomodoroPhone', { body: `${phaseMin} min session complete!` });
       seconds = phaseMin * 60;
       updateDisplay();
@@ -358,8 +378,75 @@ function toggleTimer() {
   }, 1000);
 }
 
+function saveCookie() {
+  document.cookie = 'pomodoro=' + encodeURIComponent(JSON.stringify({ history, todos })) + ';path=/;max-age=31536000';
+}
+
+function loadCookie() {
+  const m = document.cookie.match(/(?:^|;\s*)pomodoro=([^;]*)/);
+  if (m) {
+    try { const d = JSON.parse(decodeURIComponent(m[1])); history = d.history || []; todos = d.todos || []; } catch (_) {}
+  }
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+}
+
+function renderTodos() {
+  if (!todos.length) {
+    todoListEl.innerHTML = '<li class="empty-state" style="padding:24px 0">Add tasks for this session</li>';
+    return;
+  }
+  todoListEl.innerHTML = todos.map((t, i) =>
+    `<li class="todo-item${t.done ? ' done' : ''}" data-i="${i}">` +
+      `<input type="checkbox" ${t.done ? 'checked' : ''}>` +
+      `<label>${escapeHtml(t.text)}</label>` +
+      `<button class="todo-delete">&times;</button></li>`
+  ).join('');
+}
+
+function addTodo() {
+  const text = todoInput.value.trim();
+  if (!text) return;
+  todos.push({ text, done: false });
+  todoInput.value = '';
+  renderTodos();
+  saveCookie();
+}
+
+function renderHistory() {
+  if (!history.length) {
+    historyContainer.innerHTML = '<div class="empty-state">No sessions completed yet</div>';
+    return;
+  }
+  historyContainer.innerHTML = history.map(h =>
+    `<div class="history-item">` +
+      `<div class="history-item-header">` +
+        `<span>${h.duration} min</span>` +
+        `<span class="history-timestamp">${h.date}</span>` +
+      `</div>` +
+      (h.tasks.length
+        ? `<div class="history-tasks">${h.tasks.map(t => '✓ ' + t).join(' &middot; ')}</div>`
+        : `<div class="history-tasks" style="color:rgba(255,255,255,0.2)">no tasks recorded</div>`) +
+    `</div>`
+  ).join('');
+}
+
 btnStart.addEventListener('click', toggleTimer);
 btnReset.addEventListener('click', () => { stopTimer(); seconds = phaseMin * 60; updateDisplay(); });
+btnAddTodo.addEventListener('click', addTodo);
+todoInput.addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+
+todoListEl.addEventListener('click', e => {
+  const li = e.target.closest('.todo-item');
+  if (!li) return;
+  const i = parseInt(li.dataset.i);
+  if (e.target.type === 'checkbox') { todos[i].done = !todos[i].done; renderTodos(); saveCookie(); }
+  if (e.target.classList.contains('todo-delete')) { todos.splice(i, 1); renderTodos(); saveCookie(); }
+});
 
 phaseBtns.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -370,6 +457,9 @@ phaseBtns.forEach(btn => {
 });
 
 if (Notification.permission === 'default') Notification.requestPermission();
+loadCookie();
+renderHistory();
+renderTodos();
 setPhase(25);
 </script>
 </body>
