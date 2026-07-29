@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PomodoroPhone</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, 'Helvetica Neue', 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a1628 0%, #000000 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #fff;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.glass-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 20px;
+}
+
+/* Timer section */
+.timer-display {
+  text-align: center;
+  padding: 12px 0 20px;
+}
+
+.ascii-art {
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.15;
+  color: #fff;
+  white-space: pre;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 16px 0 24px;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 10px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover { background: rgba(255, 255, 255, 0.14); }
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: #1e3a5f; border-color: #2a4a7f; }
+.btn-primary:hover { background: #2a4a7f; }
+.btn-danger { background: rgba(200, 50, 50, 0.3); border-color: rgba(200, 50, 50, 0.4); }
+.btn-danger:hover { background: rgba(200, 50, 50, 0.45); }
+
+/* Todo list */
+.todo-input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.todo-input-row input {
+  flex: 1;
+  font-family: inherit;
+  font-size: 15px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.todo-input-row input::placeholder { color: rgba(255, 255, 255, 0.3); }
+.todo-input-row input:focus { border-color: rgba(255, 255, 255, 0.3); }
+
+.todo-list { list-style: none; }
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.todo-item:last-child { border-bottom: none; }
+
+.todo-item label {
+  flex: 1;
+  font-size: 15px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.todo-item input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.todo-item input[type="checkbox"]:checked {
+  background: #1e3a5f;
+  border-color: #2a4a7f;
+}
+
+.todo-item input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.todo-item.done label {
+  text-decoration: line-through;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.todo-delete {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.todo-delete:hover { color: rgba(200, 50, 50, 0.7); }
+
+/* History */
+.history-item {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.history-item:last-child { border-bottom: none; }
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.history-timestamp {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.history-tasks {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.4;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 0;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .container { grid-template-columns: 1fr; }
+}
+
+/* Phase selector */
+.phase-selector {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.phase-btn {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.phase-btn.active {
+  background: rgba(30, 58, 95, 0.5);
+  border-color: #2a4a7f;
+  color: #fff;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- LEFT PANEL: Timer + Session Todo -->
+  <div class="glass">
+    <div class="glass-title">Pomodoro</div>
+    <div class="phase-selector">
+      <button class="phase-btn active" data-min="25">Focus</button>
+      <button class="phase-btn" data-min="5">Break</button>
+      <button class="phase-btn" data-min="15">Long Break</button>
+    </div>
+    <div class="timer-display">
+      <div class="ascii-art" id="asciiDisplay"></div>
+    </div>
+    <div class="timer-controls">
+      <button class="btn btn-primary" id="btnStart">Start</button>
+      <button class="btn" id="btnReset">Reset</button>
+    </div>
+    <div class="glass-title" style="margin-top:8px">Session Tasks</div>
+    <div class="todo-input-row">
+      <input type="text" id="todoInput" placeholder="Add a task..." autocomplete="off">
+      <button class="btn" id="btnAddTodo" style="padding:10px 18px">+</button>
+    </div>
+    <ul class="todo-list" id="todoList"></ul>
+  </div>
+
+  <!-- RIGHT PANEL: History -->
+  <div class="glass">
+    <div class="glass-title">Completed Sessions</div>
+    <div id="historyContainer">
+      <div class="empty-state">No sessions completed yet</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Phase 1: Structure & Glassmorphism
+// (Timer and Todo logic will be added in Phase 2 & 3)
+</script>
+</body>
+</html>
