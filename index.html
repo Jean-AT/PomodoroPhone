@@ -217,8 +217,42 @@ body {
 }
 
 /* Responsive */
-@media (max-width: 720px) {
-  .container { grid-template-columns: 1fr; }
+@media (max-width: 1100px) {
+  .glass { padding: 22px; border-radius: 24px; }
+  .ascii-art { font-size: 10px; }
+  .container { gap: 18px; }
+}
+
+@media (max-width: 820px) {
+  .ascii-art { font-size: 8.5px; min-height: 110px; }
+  .glass-title { font-size: 11px; margin-bottom: 14px; }
+  .btn { font-size: 13px; padding: 8px 20px; }
+  .todo-item label { font-size: 13px; }
+  .phase-btn { font-size: 11px; padding: 5px 14px; }
+}
+
+@media (max-width: 640px) {
+  body { padding: 12px; align-items: flex-start; min-height: 100dvh; }
+  .container { grid-template-columns: 1fr; gap: 14px; }
+  .glass { padding: 18px; border-radius: 20px; }
+  .ascii-art { font-size: 3.2vw; min-height: 90px; }
+  .timer-controls { gap: 8px; }
+  .btn { font-size: 14px; padding: 10px 24px; min-height: 44px; }
+  .todo-input-row input { font-size: 16px; min-height: 44px; }
+  .todo-item { padding: 8px 0; }
+  .todo-item label { font-size: 14px; }
+  .todo-item input[type="checkbox"] { width: 22px; height: 22px; }
+  .phase-selector { gap: 4px; }
+  .phase-btn { font-size: 12px; padding: 6px 12px; }
+  .glass-title { font-size: 10px; margin-bottom: 12px; letter-spacing: 0.3px; }
+  .todo-delete { font-size: 20px; padding: 0 8px; }
+}
+
+@media (max-width: 400px) {
+  .glass { padding: 14px; border-radius: 16px; }
+  .ascii-art { font-size: 2.8vw; min-height: 70px; }
+  .btn { font-size: 12px; padding: 8px 16px; }
+  .timer-controls { margin: 10px 0 16px; }
 }
 
 /* Phase selector */
